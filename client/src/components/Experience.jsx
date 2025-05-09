@@ -1,14 +1,25 @@
-import { Html, OrbitControls, Text, Text3D, useGLTF, useTexture } from '@react-three/drei'
-import React, { useEffect, useRef, useState } from 'react'
+import { Float, Html, OrbitControls, Text, Text3D, useGLTF, useMatcapTexture, useTexture } from '@react-three/drei'
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import * as THREE from 'three'
-import { useFrame } from '@react-three/fiber';
+import { useFrame, useLoader, useThree } from '@react-three/fiber';
 import gsap from 'gsap'
 
 const Experience = () => {
   const model = useGLTF('./bus_stop.glb');
   const bus = useGLTF('./bus.glb')
   const me = useGLTF('./characterbody.glb')
+
+  //refs
+  const busStopRef = useRef();
+  const clouds = useRef();
+
+
+  const [showScene, setShowScene] = useState(false);
+
+  // matcap
+  const matcap = useLoader(THREE.TextureLoader, './reflect.jpg');
+  const matcapGold = useLoader(THREE.TextureLoader, './gold.jpg');
 
   const textGroupRef = useRef();
 
@@ -21,6 +32,18 @@ const Experience = () => {
   const busRef = useRef();
   const wheelRefs = useRef([]);
   const fence = useTexture('./fence.png');
+
+  const groupRef = useRef();
+
+   // raycaster
+   const raycaster = new THREE.Raycaster();
+   const mouse = new THREE.Vector2();
+
+   const [isClicked, setIsClicked] = useState(false);
+
+   const cameraRef = useRef();
+
+
 
   // text animation
   useEffect(() => {
@@ -96,6 +119,21 @@ const Experience = () => {
         });
       }
     }
+
+
+    if (cameraRef.current) {
+     
+      if (isClicked) {
+        gsap.to(cameraRef.current.position, {
+          x: 10,
+          y: 3,
+          z: 10,
+          duration: 2,
+          ease: "power3.out",
+          onComplete: () => setIsClicked(false), 
+        });
+      }
+    }
   });
 
   useEffect(() => {
@@ -142,23 +180,151 @@ const Experience = () => {
     })
   }, [bus]);
 
+  const { camera } = useThree();
+
+    
+  const onMouseClick = (event) => {
+
+
+    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+   
+    raycaster.setFromCamera(mouse, camera);
+
+    
+    const intersects = raycaster.intersectObjects([model.scene, bus.scene, me.scene], true);
+
+    
+    if (intersects.length > 0) {
+      const clickedObject = intersects[0].object;
+      if (clickedObject.name === "Object_5") {
+        setIsClicked(true); 
+        console.log('clicked')
+      }
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener("click", onMouseClick);
+    return () => {
+      window.removeEventListener("click", onMouseClick);
+    };
+  }, []);
+
+  useLayoutEffect(() => {
+    if (busStopRef.current) {
+      busStopRef.current.position.y = -3;
+    }
+    if (clouds.current) {
+      clouds.current.position.y = -3;
+    }
+  }, []);
+
+
+  // enter animation
+  useEffect(() => {
+    if (showScene) {
+      gsap.to(busStopRef.current.position, {
+        y: -1,
+        duration: 1.5,
+        ease: 'power3.out',
+      });
+  
+      gsap.to(clouds.current.position, {
+        y: 0,
+        duration: 1.5,
+        delay: 1,
+        ease: 'power3.out',
+      });
+    }
+  }, [])
+
+
+
+  useFrame(() => {
+    if (isClicked) {
+      gsap.to(camera.position, {
+        x: -2,
+        y: 1.5,
+        z: 0,
+        duration: 2,
+        ease: "power3.out",
+        onComplete: () => setIsClicked(false),
+      });
+
+      gsap.to(camera.rotation, {
+        x: 0,
+        y: -1.7,
+        z: 0,
+        duration: 2,
+        ease: "power3.out",
+        onComplete: () => setIsClicked(false),
+      });
+
+     
+      
+    }
+  });
+
   return (
     <>
-      <EffectComposer>
-        <Bloom luminanceThreshold={0.2} luminanceSmoothing={1} intensity={2} />
-      </EffectComposer>
+     {showScene && (
+     <group ref={groupRef}>
 
       <group position={[0, 0, 0]}>
-        <primitive shadow object={model.scene} scale={2} position={[-1, -1, 0]} />
+        <primitive ref = {busStopRef} shadow object={model.scene} scale={2} position={[-1, -1, 0]} />
         <primitive ref={busRef} object={bus.scene} scale={1} rotation={[0, -1.5, 0]} position={[15, 0, 4]} />
-        <primitive object={me.scene} scale={0.5} position={[0, 0, 3]} />
+        <primitive object={me.scene} scale={0.5} position={[0, 0, 3]}  />
       </group>
+
+     
 
       <mesh receiveShadow position={[0, -1, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[500, 500]} />
-        <meshStandardMaterial color="#4ED7F1" />
+        <meshStandardMaterial color="#578FCA" />
       </mesh>
 
+<group ref = {clouds}>
+   <mesh position={[-7, -0.5, 0]} >
+    <cylinderGeometry args = {[2, 1, 1]} />
+    <meshBasicMaterial color = "white" />
+   </mesh>
+
+   <Float>
+   <mesh position={[-7, 2, 0]}>
+    <boxGeometry args={[1, 1]} />
+    <meshMatcapMaterial matcap={matcap} />
+    
+  </mesh>
+  </Float>
+
+   <mesh position={[10, -0.5, -4]} >
+    <cylinderGeometry args = {[2, 1, 1]} />
+    <meshBasicMaterial color = "white" />
+   </mesh>
+
+   <Float >
+   <mesh position={[10, 1.2, -3]}>
+    <coneGeometry args={[0.5]} />
+    <meshMatcapMaterial matcap={matcapGold} />
+    
+  </mesh>
+  </Float>
+
+
+
+   <mesh position={[-3, -0.5, -10]} >
+    <cylinderGeometry args = {[2, 1, 1]} />
+    <meshBasicMaterial color = "white" />
+   </mesh>
+
+   <mesh position={[3, -0.5, 8]} >
+    <cylinderGeometry args = {[2, 1, 1]} />
+    <meshBasicMaterial color = "white" />
+   </mesh>
+   </group>
+  
       <group ref={textGroupRef} position={[-4, -1.1, 2]} rotation={[-Math.PI / 2, 0, 0]}>
   <Text3D
     font="./helvetiker_regular.typeface.json"
@@ -174,6 +340,26 @@ const Experience = () => {
     <meshStandardMaterial color="white" />
   </Text3D>
 </group>
+
+</group> )}
+{!showScene && (
+  <mesh
+  position={[0, 0, 0]}
+  onClick={() => {
+    setShowScene(true);
+   
+  }}
+>
+  <planeGeometry args={[2, 1]} />
+  <meshStandardMaterial color="orange" />
+  <Html position={[0, 0, 0.01]} center>
+    <div style={{ color: 'white', fontWeight: 'bold' }}>ENTER</div>
+  </Html>
+</mesh>
+
+)}
+
+
     </>
   );
 }
