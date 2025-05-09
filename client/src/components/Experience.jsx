@@ -4,11 +4,14 @@ import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import * as THREE from 'three'
 import { useFrame, useLoader, useThree } from '@react-three/fiber';
 import gsap from 'gsap'
+import { useUser } from '@/context/UserContext';
 
 const Experience = () => {
   const model = useGLTF('./bus_stop.glb');
   const bus = useGLTF('./bus.glb')
   const me = useGLTF('./characterbody.glb')
+
+  const { toggleNightMode } = useUser();
 
   //refs
   const busStopRef = useRef();
@@ -269,6 +272,7 @@ const Experience = () => {
 
   return (
     <>
+    
      {showScene && (
      <group ref={groupRef}>
 
@@ -359,6 +363,9 @@ const Experience = () => {
 
 )}
 
+<Html>
+<button onClick={toggleNightMode}>sfsf</button>
+</Html>
 
     </>
   );
