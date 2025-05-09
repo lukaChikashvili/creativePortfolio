@@ -3,19 +3,41 @@ import React, { useEffect, useRef, useState } from 'react'
 import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import * as THREE from 'three'
 import { useFrame } from '@react-three/fiber';
+import gsap from 'gsap'
 
 const Experience = () => {
   const model = useGLTF('./bus_stop.glb');
   const bus = useGLTF('./bus.glb')
   const me = useGLTF('./characterbody.glb')
 
+  const textGroupRef = useRef();
+
   // text
-  const [text, setText] = useState(`Waiting for\nnew opportunities`)
+  const [text, setText] = useState(`Waiting for\nnew opportunities`);
+  const [textIndex, setTextIndex] = useState(0);
+
+  const texts = [`Waiting for\nnew opportunities`, `Creative web \ndeveloper `, `Based in \ntbilisi, georgia`];
 
   const busRef = useRef();
   const wheelRefs = useRef([]);
   const fence = useTexture('./fence.png');
 
+  // text animation
+  useEffect(() => {
+    if (!textGroupRef.current) return;
+
+    gsap.fromTo(
+      textGroupRef.current.position,
+      { y: -2 },
+      {
+        y: -1.1, 
+        duration: 1.2,
+        delay: 2,
+        ease: 'power3.out'
+      }
+    );
+  }, [text])
+  
 
   const animationState = useRef('movingIn'); 
   const pauseStart = useRef(0);
@@ -33,7 +55,7 @@ const Experience = () => {
     const t = state.clock.getElapsedTime();
 
     if (animationState.current === 'movingIn') {
-      if (busObj.position.x > 2) {
+      if (busObj.position.x > 0.5) {
         busObj.position.x -= 0.05;
       } else {
         animationState.current = 'paused';
@@ -44,6 +66,9 @@ const Experience = () => {
     else if (animationState.current === 'paused') {
       if (t - pauseStart.current >= 2) {
         animationState.current = 'movingOut';
+        const nextIndex = (textIndex + 1) % texts.length;
+        setText(texts[nextIndex]);
+        setTextIndex(nextIndex);
       }
     }
 
@@ -60,6 +85,9 @@ const Experience = () => {
       if (t - waitStart.current >= 6) { 
         busObj.position.x = 55;
         animationState.current = 'movingIn';
+
+        
+        
 
         bus.scene.traverse((child) => {
           if (child.isMesh && child.name === "Object_9") {
@@ -128,24 +156,24 @@ const Experience = () => {
 
       <mesh receiveShadow position={[0, -1, 0]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[500, 500]} />
-        <meshStandardMaterial color="#C8ACD6" />
+        <meshStandardMaterial color="#4ED7F1" />
       </mesh>
 
-      <Text3D
-        font="./helvetiker_regular.typeface.json"
-        size={0.75}
-        height={0.2}
-        curveSegments={12}
-        bevelEnabled
-        bevelThickness={0.0005}
-        bevelSize={0.02}
-        bevelOffset={0}
-        bevelSegments={5}
-        position={[-4, -1.1, 2]}
-        rotation={[-Math.PI / 2, 0, 0]}>
-        {text}
-        <meshStandardMaterial color="white" />
-      </Text3D>
+      <group ref={textGroupRef} position={[-4, -1.1, 2]} rotation={[-Math.PI / 2, 0, 0]}>
+  <Text3D
+    font="./helvetiker_regular.typeface.json"
+    size={0.75}
+    height={0.2}
+    curveSegments={12}
+    bevelEnabled
+    bevelThickness={0.0005}
+    bevelSize={0.02}
+    bevelOffset={0}
+    bevelSegments={5}>
+    {text}
+    <meshStandardMaterial color="white" />
+  </Text3D>
+</group>
     </>
   );
 }
