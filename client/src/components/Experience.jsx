@@ -1,4 +1,4 @@
-import { Float, Html, OrbitControls, Text, Text3D, useGLTF, useMatcapTexture, useTexture } from '@react-three/drei'
+import { Float, Html, OrbitControls, Stars, Text, Text3D, useGLTF, useMatcapTexture, useTexture } from '@react-three/drei'
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import * as THREE from 'three'
