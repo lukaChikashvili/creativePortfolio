@@ -4,16 +4,27 @@ import { EffectComposer, Bloom } from '@react-three/postprocessing';
 import * as THREE from 'three'
 import { useFrame, useLoader, useThree } from '@react-three/fiber';
 import gsap from 'gsap'
-import { useUser } from '@/context/UserContext';
+
+
 
 const Experience = () => {
   const model = useGLTF('./bus_stop.glb');
   const bus = useGLTF('./bus.glb')
   const me = useGLTF('./characterbody.glb')
 
+  // audio effects
+  const busSound = new Audio('./bus.mp3');
+  const busDoor = new Audio('./busDoor.wav');
+  const pop = new Audio('./pop.wav');
+
+
+
+
  // navigation
  const [nav, setNav] = useState(false);
  const [home, setHome] = useState(false);
+
+ const menuImg = useLoader(THREE.TextureLoader, './menu.png');
 
 
 
@@ -65,7 +76,16 @@ const Experience = () => {
         delay: 2,
         ease: 'power3.out'
       }
+
+      
     );
+
+    setTimeout(() => {
+      pop.play();
+    }, [2000]);
+    
+
+    
   }, [text])
   
 
@@ -87,9 +107,11 @@ const Experience = () => {
     if (animationState.current === 'movingIn') {
       if (busObj.position.x > 0.5) {
         busObj.position.x -= 0.05;
+        busSound.play();
       } else {
         animationState.current = 'paused';
         pauseStart.current = t;
+        busDoor.play();
       }
     }
 
@@ -99,12 +121,14 @@ const Experience = () => {
         const nextIndex = (textIndex + 1) % texts.length;
         setText(texts[nextIndex]);
         setTextIndex(nextIndex);
+        
       }
     }
 
     else if (animationState.current === 'movingOut') {
       if (busObj.position.x > -15) {
         busObj.position.x -= 0.05;
+        busSound.play();
       } else {
         animationState.current = 'waiting';
         waitStart.current = t;
@@ -115,7 +139,7 @@ const Experience = () => {
       if (t - waitStart.current >= 6) { 
         busObj.position.x = 55;
         animationState.current = 'movingIn';
-
+        
         
         
 
@@ -150,9 +174,10 @@ const Experience = () => {
           child.material.emissive.set('orange');
           child.material.emissiveIntensity = 3;
         }
-        if (child.name === "Object_5") {
+        if (child.isMesh && child.name === "Object_5") {
           child.material.emissive.set('orange');
           child.material.emissiveIntensity = 1.5;
+
         }
         if (child.name === "Object_6") {
           child.material.map = fence
@@ -185,7 +210,7 @@ const Experience = () => {
         }
       }
     })
-  }, [bus]);
+  }, [bus, menuImg]);
 
   const { camera } = useThree();
 
@@ -407,13 +432,15 @@ useEffect(() => {
 
 {nav && (
   <group position={[0, 1.4, 0]}> 
-    <Html center >
+    <Html center
+        
+     >
       <div className="w-[350px] h-[500px]   overflow-hidden">
         <nav className="w-full h-full bg-transparent flex flex-col items-center justify-center gap-12 p-4">
-          <button onClick={() => setHome(true)} className="bg-white w-full px-4 py-6 rounded shadow">Home</button>
-          <button className="bg-white  w-full px-4 py-6 rounded shadow">About Me</button>
-          <button className="bg-white  w-full px-4 py-6 rounded shadow">Projects</button>
-          <button className="bg-white w-full  px-4 py-6 rounded shadow">Contact</button>
+          <button onClick={() => setHome(true)} className="button bg-white w-full px-4 py-4 rounded shadow">Home</button>
+          <button className="button bg-white  w-full px-4 py-4 rounded shadow">About Me</button>
+          <button className=" button bg-white  w-full px-4 py-4 rounded shadow">Projects</button>
+          <button className="button bg-white w-full  px-4 py-4 rounded shadow">Contact</button>
         </nav>
       </div>
     </Html>
