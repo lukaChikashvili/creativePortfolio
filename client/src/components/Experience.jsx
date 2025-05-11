@@ -11,6 +11,10 @@ const Experience = () => {
   const bus = useGLTF('./bus.glb')
   const me = useGLTF('./characterbody.glb')
 
+ // navigation
+ const [nav, setNav] = useState(false);
+ const [home, setHome] = useState(false);
+
   const { toggleNightMode } = useUser();
 
   //refs
@@ -185,6 +189,34 @@ const Experience = () => {
 
   const { camera } = useThree();
 
+  const originalCameraPosition = useRef(null);
+   const originalCameraRotation = useRef(null);
+
+useEffect(() => {
+  if (!originalCameraPosition.current) {
+    originalCameraPosition.current = camera.position.clone();
+    originalCameraRotation.current = camera.rotation.clone();
+  }
+}, []);
+
+  const resetCamera = () => {
+    gsap.to(camera.position, {
+      x: originalCameraPosition.current.x,
+      y: originalCameraPosition.current.y,
+      z: originalCameraPosition.current.z,
+      duration: 2,
+      ease: "power3.out",
+    });
+  
+    gsap.to(camera.rotation, {
+      x: originalCameraRotation.current.x,
+      y: originalCameraRotation.current.y,
+      z: originalCameraRotation.current.z,
+      duration: 2,
+      ease: "power3.out",
+    });
+  };
+
     
   const onMouseClick = (event) => {
 
@@ -202,7 +234,7 @@ const Experience = () => {
     if (intersects.length > 0) {
       const clickedObject = intersects[0].object;
       if (clickedObject.name === "Object_5") {
-        setIsClicked(true); 
+        setIsClicked(!isClicked); 
         console.log('clicked')
       }
     }
@@ -265,9 +297,18 @@ const Experience = () => {
         onComplete: () => setIsClicked(false),
       });
 
-     
+     setNav(true);
       
     }
+
+    if (home && nav) {
+      resetCamera(); 
+      setNav(false); 
+      setHome(false); 
+    }
+
+     
+    
   });
 
   return (
@@ -366,6 +407,21 @@ const Experience = () => {
 <Html>
 <button onClick={toggleNightMode}>sfsf</button>
 </Html>
+
+{nav && (
+  <group position={[0, 1.4, 0]}> 
+    <Html center >
+      <div className="w-[350px] h-[500px]   overflow-hidden">
+        <nav className="w-full h-full bg-transparent flex flex-col items-center justify-center gap-12 p-4">
+          <button onClick={() => setHome(true)} className="bg-white w-full px-4 py-6 rounded shadow">Home</button>
+          <button className="bg-white  w-full px-4 py-6 rounded shadow">About Me</button>
+          <button className="bg-white  w-full px-4 py-6 rounded shadow">Projects</button>
+          <button className="bg-white w-full  px-4 py-6 rounded shadow">Contact</button>
+        </nav>
+      </div>
+    </Html>
+  </group>
+)}
 
     </>
   );
