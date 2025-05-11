@@ -15,7 +15,7 @@ const Experience = () => {
  const [nav, setNav] = useState(false);
  const [home, setHome] = useState(false);
 
-  const { toggleNightMode } = useUser();
+
 
   //refs
   const busStopRef = useRef();
@@ -404,9 +404,6 @@ useEffect(() => {
 
 )}
 
-<Html>
-<button onClick={toggleNightMode}>sfsf</button>
-</Html>
 
 {nav && (
   <group position={[0, 1.4, 0]}> 
