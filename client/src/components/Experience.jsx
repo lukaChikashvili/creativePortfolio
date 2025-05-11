@@ -7,6 +7,7 @@ import gsap from 'gsap'
 
 
 
+
 const Experience = () => {
   const model = useGLTF('./bus_stop.glb');
   const bus = useGLTF('./bus.glb')
@@ -31,6 +32,7 @@ const Experience = () => {
   //refs
   const busStopRef = useRef();
   const clouds = useRef();
+  const menuRef = useRef();
 
 
   const [showScene, setShowScene] = useState(false);
@@ -83,7 +85,7 @@ const Experience = () => {
     setTimeout(() => {
       pop.play();
     }, [2000]);
-    
+
 
     
   }, [text])
@@ -225,6 +227,7 @@ useEffect(() => {
 }, []);
 
   const resetCamera = () => {
+    
     gsap.to(camera.position, {
       x: originalCameraPosition.current.x,
       y: originalCameraPosition.current.y,
@@ -302,7 +305,7 @@ useEffect(() => {
 
 
 
-  useFrame(() => {
+  useEffect(() => {
     if (isClicked) {
       gsap.to(camera.position, {
         x: -2,
@@ -310,32 +313,86 @@ useEffect(() => {
         z: 0,
         duration: 2,
         ease: "power3.out",
-        onComplete: () => setIsClicked(false),
       });
-
+  
       gsap.to(camera.rotation, {
         x: 0,
         y: -1.7,
         z: 0,
         duration: 2,
         ease: "power3.out",
-        onComplete: () => setIsClicked(false),
+        onComplete: () => {
+          setIsClicked(false);
+          setNav(!nav);
+          
+        },
       });
 
-     setNav(true);
-      
+     
+
+    
     }
 
-    if (home && nav) {
-      resetCamera(); 
-      setNav(false); 
-      setHome(false); 
-    }
+  
+  }, [isClicked, camera]);
+
+
+
+  useEffect(() => {
+    if (nav && home &&  menuRef.current) {
+      gsap.fromTo(
+        menuRef.current.children,
+        { y: 50, opacity: 0 },
+        {
+          y: 0,
+          opacity: 1,
+          duration: 1,
+          stagger: 0.2,
+          delay: 2,
+          ease: 'power3.out'
+        }
+      );
+    }else {
+      gsap.fromTo(
+        menuRef.current,
+        { y: 50, opacity: 1 },
+        {
+          y: 0,
+          opacity: 0,
+          duration: 1,
+          stagger: 0.2,
+          delay: 2,
+          ease: 'power3.out'
+        }
+      );
 
      
-    
+    }
+
+
+  
+  }, [nav]);
+
+
+
+// hide menu
+const hideMenu = () => {
+  gsap.to(menuRef.current, {
+    y: 50,
+    opacity: 0,
+    duration: 1,
+    ease: "power3.out",
+    onComplete: () => {
+      setNav(false); 
+      resetCamera();
+   
+    },
   });
 
+}
+  
+
+  
   return (
     <>
     
@@ -435,9 +492,9 @@ useEffect(() => {
     <Html center
         
      >
-      <div className="w-[350px] h-[500px]   overflow-hidden">
+      <div className="w-[350px] h-[500px]   overflow-hidden menu" ref={menuRef} style={{ display: nav ? "block" : "none" }}>
         <nav className="w-full h-full bg-transparent flex flex-col items-center justify-center gap-12 p-4">
-          <button onClick={() => setHome(true)} className="button bg-white w-full px-4 py-4 rounded shadow">Home</button>
+          <button onClick={hideMenu} className="button bg-white w-full px-4 py-4 rounded shadow">Home</button>
           <button className="button bg-white  w-full px-4 py-4 rounded shadow">About Me</button>
           <button className=" button bg-white  w-full px-4 py-4 rounded shadow">Projects</button>
           <button className="button bg-white w-full  px-4 py-4 rounded shadow">Contact</button>
