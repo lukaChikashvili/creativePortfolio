@@ -13,6 +13,8 @@ const Experience = () => {
   const bus = useGLTF('./bus.glb')
   const me = useGLTF('./characterbody.glb')
 
+
+
   // audio effects
   const busSound = new Audio('./bus.mp3');
   const busDoor = new Audio('./busDoor.wav');
@@ -24,6 +26,7 @@ const Experience = () => {
  // navigation
  const [nav, setNav] = useState(false);
  const [home, setHome] = useState(false);
+ const [about, setAbout] = useState(false);
 
  const menuImg = useLoader(THREE.TextureLoader, './menu.png');
 
@@ -326,6 +329,8 @@ useEffect(() => {
           setNav(!nav);
           
         },
+
+
       });
 
      
@@ -333,8 +338,13 @@ useEffect(() => {
     
     }
 
+    if(about) {
+      
+    }
+
+
   
-  }, [isClicked, camera]);
+  }, [isClicked, camera, about]);
 
 
 
@@ -375,6 +385,7 @@ useEffect(() => {
 
 
 
+
 // hide menu
 const hideMenu = () => {
   gsap.to(menuRef.current, {
@@ -384,6 +395,7 @@ const hideMenu = () => {
     ease: "power3.out",
     onComplete: () => {
       setNav(false); 
+      setHome(false);
       resetCamera();
    
     },
@@ -391,7 +403,12 @@ const hideMenu = () => {
 
 }
   
+// about me
+const showAbout = () => {
+  setAbout(true);
 
+
+}
   
   return (
     <>
@@ -495,7 +512,7 @@ const hideMenu = () => {
       <div className="w-[350px] h-[500px]   overflow-hidden menu" ref={menuRef} style={{ display: nav ? "block" : "none" }}>
         <nav className="w-full h-full bg-transparent flex flex-col items-center justify-center gap-12 p-4">
           <button onClick={hideMenu} className="button bg-white w-full px-4 py-4 rounded shadow">Home</button>
-          <button className="button bg-white  w-full px-4 py-4 rounded shadow">About Me</button>
+          <button onClick={showAbout} className="button bg-white  w-full px-4 py-4 rounded shadow">About Me</button>
           <button className=" button bg-white  w-full px-4 py-4 rounded shadow">Projects</button>
           <button className="button bg-white w-full  px-4 py-4 rounded shadow">Contact</button>
         </nav>

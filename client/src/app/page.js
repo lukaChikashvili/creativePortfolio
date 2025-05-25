@@ -1,9 +1,15 @@
 "use client"
+import CameraDebugger from '@/components/CameraDebugger';
 import Experience from '@/components/Experience';
 import Lights from '@/components/Lights';
-import { Canvas } from '@react-three/fiber'
+
+import { Canvas, useThree } from '@react-three/fiber'
 
 export default function Home() {
+
+  
+
+
   return (
    <>
     <Canvas camera={{
@@ -12,6 +18,7 @@ export default function Home() {
         near: 0.1, 
         far: 1000
       }}>
+      
       <Lights />
       <Experience />
     </Canvas>
